@@ -93,8 +93,10 @@ namespace ShatteredGenerator
 
 			Console.WriteLine("Generating new countries...");
 
+			var random = new Random();
 			var outputCountryFiles = new List<KeyValuePair<string, Eu4Country>>();
 			var outputCountryHistoryFiles = new List<KeyValuePair<string, Eu4Country>>();
+			var tagCountryDictionary = new Dictionary<string, Eu4Country>();
 			var countryGenerationCount = 0;
 			var countryTagNumber = 0;
 
@@ -117,7 +119,13 @@ namespace ShatteredGenerator
 				var newCountry = oldCountry.Clone();
 				newCountry.ClearHistory();
 				var newCountryHistory = oldCountryHistory.Clone();
-				newCountry.ClearHistory();
+				newCountryHistory.ClearHistory();
+
+				// Give our new country a new shiny flag
+				newCountry.Color = new Eu4Color(
+					random.Next(byte.MaxValue),
+					random.Next(byte.MaxValue),
+					random.Next(byte.MaxValue));
 
 				// Set the province # as capital
 				var provinceNumber = int.Parse(provinceFileNameSplitted.First());
@@ -151,6 +159,7 @@ namespace ShatteredGenerator
 					countryTagNumber++;
 				}
 				countryTagNumber++;
+				tagCountryDictionary.Add(tag, newCountry);
 
 				// Give the province that new tag as an owner
 				provinceFile.Value.Owner = tag;
@@ -213,17 +222,14 @@ namespace ShatteredGenerator
 				.GetDirectories("country_tags")[0];
 			File.WriteAllText(outputCountryTagDirectory.FullName + "/00_countries.txt", countryTags.Serialize(), _encoding);
 
-			Console.WriteLine("Copying flags for new tags...");
+			Console.WriteLine("Creating flags for new tags...");
 			var outputFlagsDirectory = output
 				.GetDirectories("gfx")[0]
 				.GetDirectories("flags")[0];
-			var random = new Random();
-			var inputFlags = new DirectoryInfo("./Flags").GetFiles();
 			foreach (var tag in provinceFiles.Where(f => f.Value.Owner != null).Select(f => f.Value.Owner))
 			{
-				var inputFlag = inputFlags[random.Next(inputFlags.Length)].FullName;
 				var outputFlag = outputFlagsDirectory.FullName + "\\" + tag + ".tga";
-				File.Copy(inputFlag, outputFlag);
+				FlagGenerator.Generate(outputFlag, tagCountryDictionary[tag].Color);
 			}
 
 			Console.ForegroundColor = ConsoleColor.Green;

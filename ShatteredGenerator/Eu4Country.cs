@@ -18,6 +18,12 @@ namespace ShatteredGenerator
 			set { _data.Set("capital", value.ToString(CultureInfo.InvariantCulture)); }
 		}
 
+		public Eu4Color Color
+		{
+			get { return new Eu4Color(_data.One("color")); }
+			set { _data.Set("color", value.Serialize()); }
+		}
+
 		public string Serialize()
 		{
 			return _data.Serialize();
