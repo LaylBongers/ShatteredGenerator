@@ -1,0 +1,33 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2013
+VisualStudioVersion = 12.0.31101.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShatteredGenerator", "ShatteredGenerator\ShatteredGenerator.csproj", "{BEEE110B-FB43-46BC-A2E0-0FED9DA334A5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ShatteredGenerator.Tests", "ShatteredGenerator.Tests\ShatteredGenerator.Tests.csproj", "{149D302C-B7D9-4C7F-8D2D-2C719CE38E61}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{942646FB-A8CF-407F-BA43-070A13C6C989}"
+	ProjectSection(SolutionItems) = preProject
+		.nuget\packages.config = .nuget\packages.config
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{BEEE110B-FB43-46BC-A2E0-0FED9DA334A5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BEEE110B-FB43-46BC-A2E0-0FED9DA334A5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BEEE110B-FB43-46BC-A2E0-0FED9DA334A5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BEEE110B-FB43-46BC-A2E0-0FED9DA334A5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{149D302C-B7D9-4C7F-8D2D-2C719CE38E61}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{149D302C-B7D9-4C7F-8D2D-2C719CE38E61}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{149D302C-B7D9-4C7F-8D2D-2C719CE38E61}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{149D302C-B7D9-4C7F-8D2D-2C719CE38E61}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
