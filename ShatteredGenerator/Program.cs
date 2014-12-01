@@ -136,7 +136,8 @@ namespace ShatteredGenerator
 
 					// For some reason AUX and CON are special cases?
 					// At any rate if we try to copy flags for that it causes issues.
-					if (testTag == "AUX" || testTag == "CON")
+					// Also blacklist AND because it will mess up any use of the word "AND".
+					if (testTag == "AUX" || testTag == "CON" || testTag == "AND")
 					{
 						countryTagNumber++;
 						continue;
