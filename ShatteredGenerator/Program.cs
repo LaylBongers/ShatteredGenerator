@@ -1,8 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 
 namespace ShatteredGenerator
 {
@@ -11,10 +11,13 @@ namespace ShatteredGenerator
 		private const string GameFolder = @"C:\Program Files (x86)\Steam\SteamApps\common\Europa Universalis IV";
 		private const string OutputFolder = "./GeneratedUniversalis";
 		private const string TemplateDataFolder = "./TemplateData";
-		private static bool _verbose = false;
+		private static Encoding _encoding;
 
 		private static void Main(string[] args)
 		{
+			// Western (Windows 1252)       
+			_encoding = Encoding.GetEncoding("Windows-1252");
+
 			// ==================================================
 			Console.WriteLine("\n------ Setting Up ------");
 
@@ -53,44 +56,109 @@ namespace ShatteredGenerator
 			Console.WriteLine("Provinces Folder: " + inputProvinceDirectory.FullName + "\n");
 
 			Console.WriteLine("Loading provinces...");
-			var provinceFiles = LoadProvinceFiles(inputProvinceDirectory).ToList();
-			var provincesRequiringCountry = new List<Eu4Province>();
-			var clearCount = 0;
-			var ownerCount = 0;
+			var provinceFiles = LoadEu4Data(inputProvinceDirectory, d => new Eu4Province(d)).ToList();
 
-			foreach (var provinceFile in provinceFiles)
-			{
-				var province = provinceFile.Value;
+			// ==================================================
+			Console.WriteLine("\n------ Loading Countries ------");
 
-				if (_verbose)
-				{
-					Console.Write(provinceFile.Key);
+			Console.WriteLine("Loading countries...");
+			var inputCountryDirectory = input
+				.GetDirectories("common")[0]
+				.GetDirectories("countries")[0];
+			var inputCountryFiles = LoadEu4Data(inputCountryDirectory, d => new Eu4Country(d)).ToList();
 
-					var culture = province.Culture;
+			Console.WriteLine("Loading country histories...");
+			var inputCountryHistoryDirectory = input
+				.GetDirectories("history")[0]
+				.GetDirectories("countries")[0];
+			var inputCountryHistoryFiles = LoadEu4Data(inputCountryHistoryDirectory, d => new Eu4CountryHistory(d)).ToList();
 
-					if (culture == null)
-					{
-						Console.WriteLine(" with no Culture");
-					}
-					else
-					{
-						Console.WriteLine(" with Culture \"" + culture + "\"");
-					}
-				}
+			Console.WriteLine("Loading country tags...");
+			var inputCountryTagFile = input
+				.GetDirectories("common")[0]
+				.GetDirectories("country_tags")[0]
+				.GetFiles("00_countries.txt")[0];
+			var countryTags = new Eu4FileData(File.ReadAllText(inputCountryTagFile.FullName));
 
-				// Clear the history so it doesn't mess with stuff
-				clearCount += province.ClearHistory();
+			// ==================================================
+			Console.WriteLine("\n------ Processing Data ------");
 
-				// If this province has an owner, we will need to generate a new country for it
-				if (province.Owner != null)
-				{
-					provincesRequiringCountry.Add(province);
-					ownerCount++;
-				}
-			}
+			Console.WriteLine("Processing provinces...");
 
+			var clearCount = provinceFiles.Select(provinceFile => provinceFile.Value).Sum(province => province.ClearHistory());
 			Console.WriteLine("Cleared {0} History Entries", clearCount);
-			Console.WriteLine("Requested {0} New Countries", ownerCount);
+
+			// ==================================================
+			Console.WriteLine("\n------ Generating ------");
+
+			Console.WriteLine("Generating new countries...");
+
+			var outputCountryFiles = new List<KeyValuePair<string, Eu4Country>>();
+			var outputCountryHistoryFiles = new List<KeyValuePair<string, Eu4Country>>();
+			var countryGenerationCount = 0;
+			var countryTagNumber = 0;
+
+			foreach (var provinceFile in provinceFiles
+				// We only want to generate for countries with owners
+				.Where(f => f.Value.Owner != null))
+			{
+				// Look up the country this province already has
+				var oldCountryFilename = countryTags.One(provinceFile.Value.Owner).Split('/').Last();
+				var oldCountry = inputCountryFiles.First(f => f.Key == oldCountryFilename).Value;
+				var oldCountryHistory = inputCountryHistoryFiles.First(f => f.Key.StartsWith(provinceFile.Value.Owner)).Value;
+
+				// Get the name of the province for later usage
+				// TODO: Retrieve this from the EU4 localization file instead of from the file name?
+				var provinceFileNameSplitted = provinceFile.Key.Split(new[] {'-', ' '}, StringSplitOptions.RemoveEmptyEntries);
+				var provinceFileNameLocal = provinceFileNameSplitted.Last();
+				var provinceName = provinceFileNameLocal.Substring(0, provinceFileNameLocal.Length - ".txt".Length);
+
+				// Clone the country and its history
+				var newCountry = oldCountry.Clone();
+				var newCountryHistory = oldCountryHistory.Clone();
+
+				// Set the province # as capital
+				var provinceNumber = int.Parse(provinceFileNameSplitted.First());
+				newCountryHistory.Capital = provinceNumber;
+
+				// Look up a free tag for the country and history
+				string tag;
+				while (true)
+				{
+					var testTag = BaseConverter.IntToString(countryTagNumber, BaseConverter.CountryTagBase);
+
+					if (testTag.Length == 1)
+						testTag = "AA" + testTag;
+					if (testTag.Length == 2)
+						testTag = "A" + testTag;
+
+					if (countryTags.One(testTag) == null)
+					{
+						tag = testTag;
+						break;
+					}
+					countryTagNumber++;
+				}
+				countryTagNumber++;
+
+				// Give the province that new tag as an owner
+				provinceFile.Value.Owner = tag;
+
+				// Generate filenames for the country and history and write them to the output lists
+				var countryFilename = provinceName + ".txt";
+				var countryHistoryFilename = tag + " - " + provinceName + ".txt";
+				outputCountryFiles.Add(new KeyValuePair<string, Eu4Country>(countryFilename, newCountry));
+				outputCountryHistoryFiles.Add(new KeyValuePair<string, Eu4Country>(countryHistoryFilename, newCountryHistory));
+
+				// Write the new tag-file mapping to the output country-tag file
+				var tagMappingFilename = "countries/" + countryFilename;
+				countryTags.Set(tag, tagMappingFilename);
+
+				// TODO: Write the name of the region to the localization file.
+
+				countryGenerationCount++;
+			}
+			Console.WriteLine("Generated {0} New Countries", countryGenerationCount);
 
 			// ==================================================
 			Console.WriteLine("\n------ Creating Output ------");
@@ -103,20 +171,50 @@ namespace ShatteredGenerator
 			{
 				File.WriteAllText(
 					outputProvinceDirectory.FullName + "/" + provinceFile.Key,
-					provinceFile.Value.Serialize());
+					provinceFile.Value.Serialize(), _encoding);
 			}
+
+			Console.WriteLine("Writing country files...");
+			var outputCountryDirectory = output
+				.GetDirectories("common")[0]
+				.GetDirectories("countries")[0];
+			foreach (var countryFile in outputCountryFiles)
+			{
+				File.WriteAllText(
+					outputCountryDirectory.FullName + "/" + countryFile.Key,
+					countryFile.Value.Serialize(), _encoding);
+			}
+
+			Console.WriteLine("Writing country history files...");
+			var outputCountryHistoryDirectory = output
+				.GetDirectories("history")[0]
+				.GetDirectories("countries")[0];
+			foreach (var countryHistoryFile in outputCountryHistoryFiles)
+			{
+				File.WriteAllText(
+					outputCountryHistoryDirectory.FullName + "/" + countryHistoryFile.Key,
+					countryHistoryFile.Value.Serialize(), _encoding);
+			}
+
+			Console.WriteLine("Writing country tags...");
+			var outputCountryTagFile = input
+				.GetDirectories("common")[0]
+				.GetDirectories("country_tags")[0]
+				.GetFiles("00_countries.txt")[0];
+			File.WriteAllText(outputCountryTagFile.FullName, countryTags.Serialize(), _encoding);
 
 			Console.ForegroundColor = ConsoleColor.Green;
 			Console.WriteLine("\nDone!");
 			Console.ReadKey();
 		}
 
-		private static IEnumerable<KeyValuePair<string, Eu4Province>> LoadProvinceFiles(DirectoryInfo inputProvinceDirectory)
+		private static IEnumerable<KeyValuePair<string, TOut>> LoadEu4Data<TOut>(DirectoryInfo inputDirectory,
+			Func<Eu4FileData, TOut> converter)
 		{
-			var provinces = inputProvinceDirectory.GetFiles()
-				.Select(f => new KeyValuePair<string, Eu4Province>(
+			var provinces = inputDirectory.GetFiles()
+				.Select(f => new KeyValuePair<string, TOut>(
 					f.Name,
-					new Eu4Province(new Eu4FileData(File.ReadAllText(f.FullName)))));
+					converter(new Eu4FileData(File.ReadAllText(f.FullName, _encoding)))));
 
 			return provinces;
 		}

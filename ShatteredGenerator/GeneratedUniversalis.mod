@@ -8,3 +8,4 @@ tags=
  "Expansion"
 }
 picture="mod_generateduniversalis_universalis.png"
+supported_version="1.8"

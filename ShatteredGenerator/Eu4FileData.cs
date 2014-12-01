@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
@@ -15,14 +14,18 @@ namespace ShatteredGenerator
 			_entries = new List<KeyValuePair<string, string>>();
 		}
 
+		private Eu4FileData(List<KeyValuePair<string, string>> entries)
+		{
+			_entries = entries;
+		}
+
 		public Eu4FileData(string text)
+			: this()
 		{
 			// This parser was written quick n dirty, this entire thing was.
 			// I just wanted to get to play shattered universalis again.
 			// If this file format ends up being more complex than I expected,
 			// this will possibly need a rewrite.
-
-			_entries = new List<KeyValuePair<string, string>>();
 
 			var inComment = false;
 			var inValue = false;
@@ -30,10 +33,12 @@ namespace ShatteredGenerator
 			var currentText = "";
 			var keyText = "";
 			var nestCount = 0;
-			var inLiteral = false;
 
 			var awaitingValue = false;
 			var awaitingValueGotNewline = false;
+
+			var inLiteral = false;
+			var wasInLiteral = false;
 
 			foreach (var ch in text)
 			{
@@ -69,7 +74,7 @@ namespace ShatteredGenerator
 					}
 				}
 
-				// Literals go before comments
+				// Literals go before comments and nesting
 				if (inLiteral)
 				{
 					currentText += ch;
@@ -77,6 +82,7 @@ namespace ShatteredGenerator
 					if (ch == '"')
 					{
 						inLiteral = false;
+						wasInLiteral = true;
 					}
 
 					continue;
@@ -86,7 +92,7 @@ namespace ShatteredGenerator
 				if (inComment)
 				{
 					if (ch == '\n')
-						inComment = false; // This fall through because of hack-y reasons
+						inComment = false; // This falls through because of hack-y reasons
 					else
 						continue;
 				}
@@ -98,14 +104,22 @@ namespace ShatteredGenerator
 					{
 						case '{':
 							nestCount++;
+							currentText += ch;
 							break;
 
 						case '}':
 							nestCount--;
+							currentText += ch;
+							wasInLiteral = false;
 							break;
 
 						case '#':
 							inComment = true;
+							break;
+
+						case '"':
+							currentText += ch;
+							inLiteral = true;
 							break;
 
 						default:
@@ -125,6 +139,7 @@ namespace ShatteredGenerator
 
 					case '{':
 						nestCount++;
+						currentText += ch;
 						break;
 
 					case '=':
@@ -136,6 +151,12 @@ namespace ShatteredGenerator
 					case '\n':
 						if (inValue)
 						{
+							if (wasInLiteral)
+							{
+								wasInLiteral = false;
+								currentText = currentText.Substring(1, currentText.Length - 2);
+							}
+
 							_entries.Add(new KeyValuePair<string, string>(keyText, currentText));
 						}
 						keyText = "";
@@ -154,6 +175,12 @@ namespace ShatteredGenerator
 						// Kind of a hack, in key ignore, in value accept it as terminator but ignore as first
 						if (inValue && !justSwitchedToValue)
 						{
+							if (wasInLiteral)
+							{
+								wasInLiteral = false;
+								currentText = currentText.Substring(1, currentText.Length - 2);
+							}
+
 							_entries.Add(new KeyValuePair<string, string>(keyText, currentText));
 							keyText = "";
 							currentText = "";
@@ -170,26 +197,52 @@ namespace ShatteredGenerator
 
 			if (inValue)
 			{
+				if (wasInLiteral)
+				{
+					currentText = currentText.Substring(1, currentText.Length - 2);
+				}
+
 				_entries.Add(new KeyValuePair<string, string>(keyText, currentText));
 			}
-		}
-
-		public string Serialize()
-		{
-			var builder = new StringBuilder();
-			foreach (var entries in _entries)
-			{
-				builder.Append(entries.Key);
-				builder.Append("=");
-				builder.AppendLine(entries.Value);
-			}
-
-			return builder.ToString();
 		}
 
 		public int Count
 		{
 			get { return _entries.Count; }
+		}
+
+		public string Serialize()
+		{
+			var builder = new StringBuilder();
+			foreach (var entry in _entries)
+			{
+				builder.Append(entry.Key);
+				builder.Append("=");
+
+				var makeLiteral =
+					entry.Value.Contains(' ') ||
+					entry.Value.Contains('\t') ||
+					entry.Value.Contains('\n');
+
+				// Make an exception if this starts with a {, because that's a nested object
+				if (makeLiteral && entry.Value.StartsWith("{"))
+				{
+					makeLiteral = false;
+				}
+
+				var value = makeLiteral
+					? "\"" + entry.Value + "\""
+					: entry.Value;
+				
+				builder.AppendLine(value);
+			}
+
+			return builder.ToString();
+		}
+
+		public Eu4FileData Clone()
+		{
+			return new Eu4FileData(_entries.ToList());
 		}
 
 		public string One(string key)
@@ -205,7 +258,7 @@ namespace ShatteredGenerator
 		public Eu4FileData OneNested(string key)
 		{
 			var text = One(key);
-			return new Eu4FileData(text.Substring(1, text.Length - 1));
+			return new Eu4FileData(text.Substring(1, text.Length - 2));
 		}
 
 		public IEnumerable<Eu4FileData> ManyNested(string key)

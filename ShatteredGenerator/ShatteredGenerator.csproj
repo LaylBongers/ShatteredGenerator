@@ -41,13 +41,25 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="BaseConverter.cs" />
     <Compile Include="Eu4FileData.cs" />
+    <Compile Include="Eu4Country.cs" />
+    <Compile Include="Eu4CountryHistory.cs" />
     <Compile Include="Eu4Province.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="TemplateData\common\country_tags\.dummy">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TemplateData\common\countries\.dummy">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Include="TemplateData\history\countries\.dummy">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="TemplateData\history\provinces\.dummy">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
@@ -56,6 +68,18 @@
     <Content Include="GeneratedUniversalis.mod">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
+    <Content Include="TemplateData\common\bookmarks\american_war_of_independence.txt" />
+    <Content Include="TemplateData\common\bookmarks\a_new_world.txt" />
+    <Content Include="TemplateData\common\bookmarks\eighty_years_war.txt" />
+    <Content Include="TemplateData\common\bookmarks\revolutionary_france.txt" />
+    <Content Include="TemplateData\common\bookmarks\rise_of_the_ottomans.txt" />
+    <Content Include="TemplateData\common\bookmarks\seven_years_war.txt" />
+    <Content Include="TemplateData\common\bookmarks\the_fall_of_byzantium.txt" />
+    <Content Include="TemplateData\common\bookmarks\the_french_revolution.txt" />
+    <Content Include="TemplateData\common\bookmarks\thirty_years_war.txt" />
+    <Content Include="TemplateData\common\bookmarks\war_of_leauge_of_cambrai.txt" />
+    <Content Include="TemplateData\common\bookmarks\war_of_the_quadruple_alliance.txt" />
+    <Content Include="TemplateData\common\bookmarks\war_of_the_spanish_succession.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
