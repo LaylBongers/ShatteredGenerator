@@ -115,7 +115,9 @@ namespace ShatteredGenerator
 
 				// Clone the country and its history
 				var newCountry = oldCountry.Clone();
+				newCountry.ClearHistory();
 				var newCountryHistory = oldCountryHistory.Clone();
+				newCountry.ClearHistory();
 
 				// Set the province # as capital
 				var provinceNumber = int.Parse(provinceFileNameSplitted.First());
@@ -131,6 +133,14 @@ namespace ShatteredGenerator
 						testTag = "AA" + testTag;
 					if (testTag.Length == 2)
 						testTag = "A" + testTag;
+
+					// For some reason AUX and CON are special cases?
+					// At any rate if we try to copy flags for that it causes issues.
+					if (testTag == "AUX" || testTag == "CON")
+					{
+						countryTagNumber++;
+						continue;
+					}
 
 					if (countryTags.One(testTag) == null)
 					{
@@ -197,11 +207,23 @@ namespace ShatteredGenerator
 			}
 
 			Console.WriteLine("Writing country tags...");
-			var outputCountryTagFile = input
+			var outputCountryTagDirectory = output
 				.GetDirectories("common")[0]
-				.GetDirectories("country_tags")[0]
-				.GetFiles("00_countries.txt")[0];
-			File.WriteAllText(outputCountryTagFile.FullName, countryTags.Serialize(), _encoding);
+				.GetDirectories("country_tags")[0];
+			File.WriteAllText(outputCountryTagDirectory.FullName + "/00_countries.txt", countryTags.Serialize(), _encoding);
+
+			Console.WriteLine("Copying flags for new tags...");
+			var outputFlagsDirectory = output
+				.GetDirectories("gfx")[0]
+				.GetDirectories("flags")[0];
+			var random = new Random();
+			var inputFlags = new DirectoryInfo("./Flags").GetFiles();
+			foreach (var tag in provinceFiles.Where(f => f.Value.Owner != null).Select(f => f.Value.Owner))
+			{
+				var inputFlag = inputFlags[random.Next(inputFlags.Length)].FullName;
+				var outputFlag = outputFlagsDirectory.FullName + "\\" + tag + ".tga";
+				File.Copy(inputFlag, outputFlag);
+			}
 
 			Console.ForegroundColor = ConsoleColor.Green;
 			Console.WriteLine("\nDone!");
@@ -252,7 +274,6 @@ namespace ShatteredGenerator
 			// Get the subdirectories for the specified directory.
 			var dir = new DirectoryInfo(directory);
 			var dirs = dir.GetDirectories();
-
 
 			// Get the files in the directory that match and delete them.
 			var files = dir.GetFiles(pattern);

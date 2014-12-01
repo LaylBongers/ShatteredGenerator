@@ -1,4 +1,6 @@
-﻿namespace ShatteredGenerator
+﻿using System.Linq;
+
+namespace ShatteredGenerator
 {
 	internal sealed class Eu4CountryHistory
 	{
@@ -17,6 +19,19 @@
 		public Eu4Country Clone()
 		{
 			return new Eu4Country(_data.Clone());
+		}
+
+		public int ClearHistory()
+		{
+			int ignoreMe;
+
+			// All history entry keys start with a #
+			var history = _data.ManyMatching(e => int.TryParse(
+				new string(new[] { e.Key.First(), '\0' }), out ignoreMe)).ToList();
+
+			_data.RemoveAll(history.Contains);
+
+			return history.Count;
 		}
 	}
 }
