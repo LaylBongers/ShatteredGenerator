@@ -1,8 +1,11 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
 
 namespace ShatteredGenerator
 {
-	internal class Eu4Province
+	internal sealed class Eu4Province
 	{
 		private readonly Eu4FileData _data;
 
@@ -28,12 +31,17 @@ namespace ShatteredGenerator
 			int ignoreMe;
 
 			// All history entry keys start with a #
-			var history = _data.Entries.Where(e => int.TryParse(
+			var history = _data.ManyMatching(e => int.TryParse(
 				new string(new[] {e.Key.First(), '\0'}), out ignoreMe)).ToList();
 
-			_data.Entries.RemoveAll(history.Contains);
+			_data.RemoveAll(history.Contains);
 
 			return history.Count;
+		}
+
+		public string Serialize()
+		{
+			return _data.Serialize();
 		}
 	}
 }

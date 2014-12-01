@@ -127,5 +127,38 @@ namespace ShatteredGenerator.Tests
 			Assert.Equal(1, data.Count);
 			Assert.Equal("\"this is a test\"", data.One("blah"));
 		}
+
+		[Fact]
+		public void Constructor_NestedObjectOpeningBracketOnNewLine_Serializes()
+		{
+			// Arrange
+			const string text = "blah=\n{\nbluh=test bleh=blegh\nflargh=flemish}";
+
+			// Act
+			var data = new Eu4FileData(text);
+
+			// Assert
+			Assert.Equal(1, data.Count);
+			var nested = data.OneNested("blah");
+			Assert.Equal(3, nested.Count);
+			Assert.Equal("test", nested.One("bluh"));
+			Assert.Equal("blegh", nested.One("bleh"));
+			Assert.Equal("flemish", nested.One("flargh"));
+		}
+
+		[Fact]
+		public void Serialize_OneField_Serializes()
+		{
+			// Arrange
+			var data = new Eu4FileData();
+
+			// Act
+			data.Set("blah", "test");
+
+			// Assert
+			var result = new Eu4FileData(data.Serialize());
+			Assert.Equal(1, result.Count);
+			Assert.Equal("test", result.One("blah"));
+		}
 	}
 }

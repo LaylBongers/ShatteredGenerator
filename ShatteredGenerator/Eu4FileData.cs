@@ -1,11 +1,19 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
+using System.Text;
 
 namespace ShatteredGenerator
 {
 	public class Eu4FileData
 	{
 		private List<KeyValuePair<string, string>> _entries;
+
+		public Eu4FileData()
+		{
+			_entries = new List<KeyValuePair<string, string>>();
+		}
 
 		public Eu4FileData(string text)
 		{
@@ -24,8 +32,44 @@ namespace ShatteredGenerator
 			var nestCount = 0;
 			var inLiteral = false;
 
+			var awaitingValue = false;
+			var awaitingValueGotNewline = false;
+
 			foreach (var ch in text)
 			{
+				// Awaiting value causes some weird stuff with newlines
+				if (awaitingValue)
+				{
+					switch (ch)
+					{
+						case '{':
+							awaitingValue = false;
+							awaitingValueGotNewline = false;
+							inValue = true;
+							break;
+
+						case '\n':
+							awaitingValueGotNewline = true;
+							continue;
+
+						default:
+							if (awaitingValueGotNewline)
+							{
+								_entries.Add(new KeyValuePair<string, string>(keyText, ""));
+								keyText = "";
+							}
+							else
+							{
+								inValue = true;
+								justSwitchedToValue = true;
+							}
+							awaitingValue = false;
+							awaitingValueGotNewline = false;
+							break;
+					}
+				}
+
+				// Literals go before comments
 				if (inLiteral)
 				{
 					currentText += ch;
@@ -86,8 +130,7 @@ namespace ShatteredGenerator
 					case '=':
 						keyText = currentText;
 						currentText = "";
-						inValue = true;
-						justSwitchedToValue = true;
+						awaitingValue = true;
 						break;
 
 					case '\n':
@@ -131,10 +174,17 @@ namespace ShatteredGenerator
 			}
 		}
 
-		public List<KeyValuePair<string, string>> Entries
+		public string Serialize()
 		{
-			get { return _entries; }
-			set { _entries = Entries; }
+			var builder = new StringBuilder();
+			foreach (var entries in _entries)
+			{
+				builder.Append(entries.Key);
+				builder.Append("=");
+				builder.AppendLine(entries.Value);
+			}
+
+			return builder.ToString();
 		}
 
 		public int Count
@@ -171,6 +221,16 @@ namespace ShatteredGenerator
 
 			// Add the new
 			_entries.Add(new KeyValuePair<string, string>(key, value));
+		}
+
+		public void RemoveAll(Predicate<KeyValuePair<string, string>> match)
+		{
+			_entries.RemoveAll(match);
+		}
+
+		public IEnumerable<KeyValuePair<string, string>> ManyMatching(Func<KeyValuePair<string, string>, bool> predicate)
+		{
+			return _entries.Where(predicate);
 		}
 	}
 }
