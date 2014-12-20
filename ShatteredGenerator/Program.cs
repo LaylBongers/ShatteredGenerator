@@ -164,6 +164,9 @@ namespace ShatteredGenerator
 				// Give the province that new tag as an owner
 				provinceFile.Value.Owner = tag;
 
+				// Give our new country a core on the province
+				provinceFile.Value.AddCore(tag);
+
 				// Generate filenames for the country and history and write them to the output lists
 				var countryFilename = provinceName + ".txt";
 				var countryHistoryFilename = tag + " - " + provinceName + ".txt";
@@ -231,6 +234,42 @@ namespace ShatteredGenerator
 				var outputFlag = outputFlagsDirectory.FullName + "\\" + tag + ".tga";
 				FlagGenerator.Generate(outputFlag, tagCountryDictionary[tag].Color);
 			}
+
+			// ==================================================
+			Console.WriteLine("\n------ Creating Localisation ------");
+
+			Console.WriteLine("Loading original localisation file...");
+			var inputLocalizationFile = input
+				.GetDirectories("localisation")[0]
+				.GetFiles("countries_l_english.yml")[0];
+			var localizeText = new StringBuilder(File.ReadAllText(inputLocalizationFile.FullName));
+
+			Console.WriteLine("Creating new localisation file...");
+			foreach (var provinceFile in provinceFiles.Where(f => f.Value.Owner != null))
+			{
+				var provinceFileNameSplitted = provinceFile.Key.Split(new[] { '-', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+				var provinceFileNameLocal = provinceFileNameSplitted.Last();
+				var provinceName = provinceFileNameLocal.Substring(0, provinceFileNameLocal.Length - ".txt".Length);
+
+				// | AMG: "Armagnac"|
+				localizeText.Append(" "); 
+				localizeText.Append(provinceFile.Value.Owner);
+				localizeText.Append(": \"");
+				localizeText.Append(provinceName);
+				localizeText.AppendLine("\"");
+
+				// | AMG_ADJ: "Armagnac"|
+				localizeText.Append(" ");
+				localizeText.Append(provinceFile.Value.Owner);
+				localizeText.Append("_ADJ: \"");
+				localizeText.Append(provinceName);
+				localizeText.AppendLine("\"");
+			}
+
+			// Actually write it to the file (in UTF-8, different from what the other files use)
+			var outputLocalizationDirectory = output
+				.GetDirectories("localisation")[0];
+			File.WriteAllText(outputLocalizationDirectory.FullName + "/countries_l_english.yml", localizeText.ToString());
 
 			Console.ForegroundColor = ConsoleColor.Green;
 			Console.WriteLine("\nDone!");

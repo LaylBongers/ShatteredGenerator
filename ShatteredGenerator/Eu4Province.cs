@@ -40,5 +40,10 @@ namespace ShatteredGenerator
 		{
 			return _data.Serialize();
 		}
+
+		public void AddCore(string countryTag)
+		{
+			_data.Add("add_core", countryTag);
+		}
 	}
 }

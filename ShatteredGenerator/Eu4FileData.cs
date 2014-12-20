@@ -285,5 +285,10 @@ namespace ShatteredGenerator
 		{
 			return _entries.Where(predicate);
 		}
+
+		public void Add(string key, string value)
+		{
+			_entries.Add(new KeyValuePair<string, string>(key, value));
+		}
 	}
 }
