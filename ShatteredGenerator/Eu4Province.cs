@@ -16,6 +16,12 @@ namespace ShatteredGenerator
 			get { return _data.One("culture"); }
 			set { _data.Set("culture", value); }
 		}
+		
+		public string Religion
+	        {
+	            get { return _data.One("religion"); }
+	            set { _data.Set("religion", value); }
+	        }
 
 		public string Owner
 		{
