@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -120,6 +120,14 @@ namespace ShatteredGenerator
 				newCountry.ClearHistory();
 				var newCountryHistory = oldCountryHistory.Clone();
 				newCountryHistory.ClearHistory();
+
+                //Make the culture and religion match the province
+                if(provinceFile.Value.Culture != null)
+                    newCountryHistory.Culture = provinceFile.Value.Culture;
+
+                if (provinceFile.Value.Religion != null)
+                    newCountryHistory.Religion = provinceFile.Value.Religion;
+
 
 				// Give our new country a new shiny flag
 				newCountry.Color = new Eu4Color(
