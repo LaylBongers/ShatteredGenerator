@@ -121,12 +121,12 @@ namespace ShatteredGenerator
 				var newCountryHistory = oldCountryHistory.Clone();
 				newCountryHistory.ClearHistory();
 
-                //Make the culture and religion match the province
-                if(provinceFile.Value.Culture != null)
-                    newCountryHistory.Culture = provinceFile.Value.Culture;
+        			 //Make the culture and religion match the province
+                		if(provinceFile.Value.Culture != null)
+                    			newCountryHistory.Culture = provinceFile.Value.Culture;
 
-                if (provinceFile.Value.Religion != null)
-                    newCountryHistory.Religion = provinceFile.Value.Religion;
+                		if (provinceFile.Value.Religion != null)
+                    			newCountryHistory.Religion = provinceFile.Value.Religion;
 
 
 				// Give our new country a new shiny flag
