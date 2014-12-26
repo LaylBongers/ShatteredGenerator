@@ -93,7 +93,11 @@ namespace ShatteredGenerator
 
 			Console.WriteLine("Generating new countries...");
 
-			var random = new Random();
+			//var random = new Random();
+		        Eu4ColorHandler colorHandler = new Eu4ColorHandler();
+		        //Must call this!
+		        colorHandler.LoadColors();
+		        
 			var outputCountryFiles = new List<KeyValuePair<string, Eu4Country>>();
 			var outputCountryHistoryFiles = new List<KeyValuePair<string, Eu4Country>>();
 			var tagCountryDictionary = new Dictionary<string, Eu4Country>();
@@ -129,10 +133,7 @@ namespace ShatteredGenerator
 		                    newCountryHistory.Religion = provinceFile.Value.Religion;
 
 				// Give our new country a new shiny flag
-				newCountry.Color = new Eu4Color(
-					random.Next(byte.MaxValue),
-					random.Next(byte.MaxValue),
-					random.Next(byte.MaxValue));
+                		newCountry.Color = colorHandler.GetRandomColor(newCountryHistory.Culture);
 
 				// Set the province # as capital
 				var provinceNumber = int.Parse(provinceFileNameSplitted.First());
