@@ -1,12 +1,13 @@
-﻿using System;
+﻿using System.Globalization;
+using System.Linq;
 
 namespace ShatteredGenerator
 {
 	public class Eu4Color
 	{
-		public Eu4Color(string data)
+		public Eu4Color(Eu4Data data)
 		{
-			var values = data.Split(new[] {' ', '{', '}'}, StringSplitOptions.RemoveEmptyEntries);
+			var values = data.Many("").ToArray();
 			Red = (byte) int.Parse(values[0]);
 			Green = (byte) int.Parse(values[1]);
 			Blue = (byte) int.Parse(values[2]);
@@ -23,9 +24,13 @@ namespace ShatteredGenerator
 		public byte Green { get; set; }
 		public byte Blue { get; set; }
 
-		public string Serialize()
+		public Eu4Data ToData()
 		{
-			return "{ " + Red + " " + Green + " " + Blue + " }";
+			var data = new Eu4Data();
+			data.Add("", Red.ToString(CultureInfo.InvariantCulture));
+			data.Add("", Green.ToString(CultureInfo.InvariantCulture));
+			data.Add("", Blue.ToString(CultureInfo.InvariantCulture));
+			return data;
 		}
 	}
 }

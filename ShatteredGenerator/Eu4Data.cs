@@ -29,20 +29,24 @@ namespace ShatteredGenerator
 			var builder = new StringBuilder();
 			foreach (var entry in _entries)
 			{
-				var key = entry.Key;
+				// Only add a key if we have one
+				if (!string.IsNullOrEmpty(entry.Key))
+				{
+					var key = entry.Key;
 
-				// Make sure the key's in quotes if needed
-				var makeKeyLiteral =
-					key.Contains(' ') ||
-					key.Contains('\t') ||
-					key.Contains('\n');
+					// Make sure the key's in quotes if needed
+					var makeKeyLiteral =
+						key.Contains(' ') ||
+						key.Contains('\t') ||
+						key.Contains('\n');
 
-				key = makeKeyLiteral
-					? "\"" + key + "\""
-					: key;
+					key = makeKeyLiteral
+						? "\"" + key + "\""
+						: key;
 
-				builder.Append(key);
-				builder.Append("=");
+					builder.Append(key);
+					builder.Append("=");
+				}
 
 				if (entry.Value.String != null) // If we're dealing with a string value
 				{
@@ -63,7 +67,7 @@ namespace ShatteredGenerator
 				else if (entry.Value.Data != null) // If we're dealing with a nested object value
 				{
 					builder.AppendLine("{");
-					builder.AppendLine(entry.Value.Data.Serialize());
+					builder.Append(entry.Value.Data.Serialize());
 					builder.AppendLine("}");
 				}
 			}
@@ -106,6 +110,15 @@ namespace ShatteredGenerator
 
 			// Add the new
 			_entries.Add(new KeyValuePair<string, Eu4DataEntry>(key, new Eu4DataEntry {String = value}));
+		}
+
+		public void Set(string key, Eu4Data value)
+		{
+			// Remove the old
+			_entries = _entries.Where(e => e.Key != key).ToList();
+
+			// Add the new
+			_entries.Add(new KeyValuePair<string, Eu4DataEntry>(key, new Eu4DataEntry {Data = value}));
 		}
 
 		public void RemoveAll(Predicate<KeyValuePair<string, Eu4DataEntry>> match)

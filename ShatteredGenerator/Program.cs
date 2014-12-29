@@ -94,10 +94,10 @@ namespace ShatteredGenerator
 			Console.WriteLine("Generating new countries...");
 
 			//var random = new Random();
-		    Eu4ColorHandler colorHandler = new Eu4ColorHandler();
-		    //Must call this!
-		    colorHandler.LoadColors();
-		        
+			var colorHandler = new Eu4ColorHandler();
+			//Must call this!
+			colorHandler.LoadColors();
+
 			var outputCountryFiles = new List<KeyValuePair<string, Eu4Country>>();
 			var outputCountryHistoryFiles = new List<KeyValuePair<string, Eu4Country>>();
 			var tagCountryDictionary = new Dictionary<string, Eu4Country>();
@@ -120,23 +120,23 @@ namespace ShatteredGenerator
 				var provinceName = provinceFileNameLocal.Substring(0, provinceFileNameLocal.Length - ".txt".Length);
 
 				//Fix bad HRE status
-                		provinceFile.Value.RemoveBadHreStatus();
+				provinceFile.Value.RemoveBadHreStatus();
 
 				// Clone the country and its history
 				var newCountry = oldCountry.Clone();
 				newCountry.ClearHistory();
 				var newCountryHistory = oldCountryHistory.Clone();
 				newCountryHistory.ClearHistory();
-				
+
 				//Make the culture and religion match the province
-		                if(provinceFile.Value.Culture != null)
-		                    newCountryHistory.Culture = provinceFile.Value.Culture;
-		
-		                if (provinceFile.Value.Religion != null)
-		                    newCountryHistory.Religion = provinceFile.Value.Religion;
+				if (provinceFile.Value.Culture != null)
+					newCountryHistory.Culture = provinceFile.Value.Culture;
+
+				if (provinceFile.Value.Religion != null)
+					newCountryHistory.Religion = provinceFile.Value.Religion;
 
 				// Give our new country a new shiny flag
-                		newCountry.Color = colorHandler.GetRandomColor(newCountryHistory.Culture);
+				newCountry.Color = colorHandler.GetRandomColor(newCountryHistory.Culture);
 
 				// Set the province # as capital
 				var provinceNumber = int.Parse(provinceFileNameSplitted.First());
@@ -258,12 +258,12 @@ namespace ShatteredGenerator
 			Console.WriteLine("Creating new localisation file...");
 			foreach (var provinceFile in provinceFiles.Where(f => f.Value.Owner != null))
 			{
-				var provinceFileNameSplitted = provinceFile.Key.Split(new[] { '-', ' ' }, StringSplitOptions.RemoveEmptyEntries);
+				var provinceFileNameSplitted = provinceFile.Key.Split(new[] {'-', ' '}, StringSplitOptions.RemoveEmptyEntries);
 				var provinceFileNameLocal = provinceFileNameSplitted.Last();
 				var provinceName = provinceFileNameLocal.Substring(0, provinceFileNameLocal.Length - ".txt".Length);
 
 				// | AMG: "Armagnac"|
-				localizeText.Append(" "); 
+				localizeText.Append(" ");
 				localizeText.Append(provinceFile.Value.Owner);
 				localizeText.Append(": \"");
 				localizeText.Append(provinceName);

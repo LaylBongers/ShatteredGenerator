@@ -20,8 +20,8 @@ namespace ShatteredGenerator
 
 		public Eu4Color Color
 		{
-			get { return new Eu4Color(_data.One("color")); }
-			set { _data.Set("color", value.Serialize()); }
+			get { return new Eu4Color(_data.OneNested("color")); }
+			set { _data.Set("color", value.ToData()); }
 		}
 		
 		//Added this and Religion so we can modify them to match the province they own
