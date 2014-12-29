@@ -12,13 +12,11 @@ namespace ShatteredGenerator
 		public Eu4FileData()
 		{
 			_entries = new List<KeyValuePair<string, string>>();
-            		RemoveBadHREStatus();
 		}
 
 		private Eu4FileData(List<KeyValuePair<string, string>> entries)
 		{
 			_entries = entries;
-            		RemoveBadHREStatus();
 		}
 
 		public Eu4FileData(string text)
@@ -206,8 +204,6 @@ namespace ShatteredGenerator
 
 				_entries.Add(new KeyValuePair<string, string>(keyText, currentText));
 			}
-
-            		RemoveBadHREStatus();
 		}
 
 		public int Count
@@ -294,29 +290,5 @@ namespace ShatteredGenerator
 		{
 			_entries.Add(new KeyValuePair<string, string>(key, value));
 		}
-
-	        /// <summary>
-	        /// If the entries references the hre status, it will set it to no
-	        /// </summary>
-	        private void RemoveBadHREStatus()
-	        {
-	            bool bHasBadHRE = false;
-	
-	            //May not be the quickest way to do this, but it's pretty safe I think
-	            for(int i = 0; i < _entries.Count; ++i)
-	            {
-	                if(_entries[i].Key == "hre" && _entries[i].Value == "yes")
-	                {
-	                    bHasBadHRE = true;
-	                    break;
-	                }
-	            }
-	
-	            if(bHasBadHRE)
-	            {
-	                _entries.Remove(new KeyValuePair<string, string>("hre", "yes"));
-	                _entries.Add(new KeyValuePair<string, string>("hre", "no"));
-	            }
-	        }
 	}
 }
