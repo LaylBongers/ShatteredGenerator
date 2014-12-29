@@ -71,6 +71,9 @@
     <None Include="TemplateData\common\countries\.dummy">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+    <None Include="TemplateData\common\defines.lua">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
     <None Include="TemplateData\localisation\.dummy">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
