@@ -3,7 +3,7 @@ using Xunit;
 
 namespace ShatteredGenerator.Tests
 {
-	public class Eu4DataGrammarTests
+	public class Eu4DataConvertTests
 	{
 		[Fact]
 		public void Deserialize_OneField_Serializes()
@@ -17,6 +17,20 @@ namespace ShatteredGenerator.Tests
 			// Assert
 			Assert.Equal(1, data.Count);
 			Assert.Equal("test", data.One("blah"));
+		}
+
+		[Fact]
+		public void Deserialize_OneFieldLiteralKey_Serializes()
+		{
+			// Arrange
+			const string text = "\"#1 blah\"=test";
+
+			// Act
+			var data = Eu4DataConvert.Deserialize(text);
+
+			// Assert
+			Assert.Equal(1, data.Count);
+			Assert.Equal("test", data.One("#1 blah"));
 		}
 
 		[Fact]
@@ -39,6 +53,21 @@ namespace ShatteredGenerator.Tests
 		{
 			// Arrange
 			const string text = "blah=test test=blah";
+
+			// Act
+			var data = Eu4DataConvert.Deserialize(text);
+
+			// Assert
+			Assert.Equal(2, data.Count);
+			Assert.Equal("test", data.One("blah"));
+			Assert.Equal("blah", data.One("test"));
+		}
+
+		[Fact]
+		public void Deserialize_TwoFieldsUnclosedLiteralOnFirst_Serializes()
+		{
+			// Arrange
+			const string text = "blah=\"test\ntest=blah";
 
 			// Act
 			var data = Eu4DataConvert.Deserialize(text);
@@ -238,7 +267,7 @@ namespace ShatteredGenerator.Tests
 			Assert.Equal("this is a test", result.One("blah"));
 		}
 
-		[Fact]
+		/*[Fact] Turns out EU4's file data supports an unclosed literal that's closed at the end of a line automatically
 		public void Serialize_StringWithEnters_SerializesWithQuotes()
 		{
 			// Arrange
@@ -252,6 +281,6 @@ namespace ShatteredGenerator.Tests
 			var result = Eu4DataConvert.Deserialize(serialized);
 			Assert.Equal(1, result.Count);
 			Assert.Equal("this is\na test", result.One("blah"));
-		}
+		}*/
 	}
 }

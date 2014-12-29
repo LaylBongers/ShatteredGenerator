@@ -29,27 +29,43 @@ namespace ShatteredGenerator
 			var builder = new StringBuilder();
 			foreach (var entry in _entries)
 			{
-				builder.Append(entry.Key);
+				var key = entry.Key;
+
+				// Make sure the key's in quotes if needed
+				var makeKeyLiteral =
+					key.Contains(' ') ||
+					key.Contains('\t') ||
+					key.Contains('\n');
+
+				key = makeKeyLiteral
+					? "\"" + key + "\""
+					: key;
+
+				builder.Append(key);
 				builder.Append("=");
 
-				var value = entry.Value.String;
-				var makeLiteral =
-					value.Contains(' ') ||
-					value.Contains('\t') ||
-					value.Contains('\n');
-
-				// Make an exception if this starts with a {, because that's a nested object
-				// TODO: Instead make this pick up the Eu4Data object
-				if (makeLiteral && value.StartsWith("{"))
+				if (entry.Value.String != null) // If we're dealing with a string value
 				{
-					makeLiteral = false;
+					var value = entry.Value.String;
+
+					// Make sure the value's in quotes if needed
+					var makeValueLiteral =
+						value.Contains(' ') ||
+						value.Contains('\t') ||
+						value.Contains('\n');
+
+					value = makeValueLiteral
+						? "\"" + value + "\""
+						: value;
+
+					builder.AppendLine(value);
 				}
-
-				value = makeLiteral
-					? "\"" + value + "\""
-					: value;
-
-				builder.AppendLine(value);
+				else if (entry.Value.Data != null) // If we're dealing with a nested object value
+				{
+					builder.AppendLine("{");
+					builder.AppendLine(entry.Value.Data.Serialize());
+					builder.AppendLine("}");
+				}
 			}
 
 			return builder.ToString();
@@ -62,7 +78,10 @@ namespace ShatteredGenerator
 
 		public string One(string key)
 		{
-			return _entries.FirstOrDefault(e => e.Key == key).Value.String;
+			var entry = _entries.FirstOrDefault(e => e.Key == key);
+			return entry.Value == null
+				? null
+				: entry.Value.String;
 		}
 
 		public IEnumerable<string> Many(string key)

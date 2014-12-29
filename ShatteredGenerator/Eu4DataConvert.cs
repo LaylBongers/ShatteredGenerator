@@ -14,6 +14,16 @@ namespace ShatteredGenerator
 
 		public static Eu4Data Deserialize(string text)
 		{
+			// Little hack to correct unclosed quotation marks since APPARENTLY that is valid in the EU4 parser
+			var lines = text.Split(new[] {'\r', '\n'}, StringSplitOptions.RemoveEmptyEntries).Select(l =>
+			{
+				var amount = l.Count(c => c == '\"');
+				return amount%2 == 0
+					? l
+					: l + "\"";
+			});
+			text = string.Join("\r\n", lines);
+
 			var parseTree = Parser.Parse(text);
 
 			// If we don't have any errors, we can parse the resulting tree
@@ -68,7 +78,21 @@ namespace ShatteredGenerator
 			Debug.Assert(node.Term == Grammar.KeyValue);
 
 			var nodes = node.ChildNodes.ToArray();
-			return new KeyValuePair<string, Eu4DataEntry>(nodes[0].Token.ValueString, ParseValue(nodes[2]));
+			return new KeyValuePair<string, Eu4DataEntry>(ParseKey(nodes[0]), ParseValue(nodes[2]));
+		}
+
+		private static string ParseKey(ParseTreeNode node)
+		{
+			Debug.Assert(node.Term == Grammar.Key);
+
+			var actual = node.ChildNodes.First();
+			if (actual.Term == Grammar.Word || actual.Term == Grammar.Literal)
+			{
+				// Trimming quotes is not needed
+				return actual.Token.ValueString;
+			}
+
+			throw new NotSupportedException("Unsupported value type.");
 		}
 
 		private static Eu4DataEntry ParseValue(ParseTreeNode node)
