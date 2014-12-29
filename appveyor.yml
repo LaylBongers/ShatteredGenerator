@@ -1,0 +1,15 @@
+configuration: Release
+
+assembly_info:
+  patch: true
+  file: AssemblyInfo.*
+  assembly_version: "1.0.{build}"
+  assembly_file_version: "{version}"
+  assembly_informational_version: "{version}"
+
+# Restore NuGet packages before running MSBuild
+before_build:
+  - nuget restore
+
+build:
+  verbosity: minimal
