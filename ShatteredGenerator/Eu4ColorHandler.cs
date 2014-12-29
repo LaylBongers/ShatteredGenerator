@@ -86,12 +86,12 @@ namespace ShatteredGenerator
         /// <returns>A culture's color</returns>
         public Eu4Color GetColor(string culture)
         {
-            Eu4Color defaultColor = new Eu4Color(255, 255, 255);
+            Eu4Color color; //The color for the culture
 
-            if (cultureColors.ContainsKey(culture))
-                return cultureColors[culture];
+            if (cultureColors.TryGetValue(culture, out color))
+                return color;
 
-            return defaultColor;
+            return new Eu4Color(255, 255, 255);
         }
     }
 }
