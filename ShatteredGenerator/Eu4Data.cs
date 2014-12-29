@@ -1,27 +1,22 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
 namespace ShatteredGenerator
 {
-	public class Eu4FileData
+	public class Eu4Data
 	{
 		private List<KeyValuePair<string, string>> _entries;
 
-		public Eu4FileData()
+		public Eu4Data()
 		{
 			_entries = new List<KeyValuePair<string, string>>();
 		}
 
-		private Eu4FileData(List<KeyValuePair<string, string>> entries)
+		private Eu4Data(List<KeyValuePair<string, string>> entries)
 		{
 			_entries = entries;
-		}
-
-		public Eu4FileData(string text)
-			: this()
-		{
 		}
 
 		public int Count
@@ -58,9 +53,9 @@ namespace ShatteredGenerator
 			return builder.ToString();
 		}
 
-		public Eu4FileData Clone()
+		public Eu4Data Clone()
 		{
-			return new Eu4FileData(_entries.ToList());
+			return new Eu4Data(_entries.ToList());
 		}
 
 		public string One(string key)
@@ -73,16 +68,16 @@ namespace ShatteredGenerator
 			return _entries.Where(e => e.Key == key).Select(e => e.Value);
 		}
 
-		public Eu4FileData OneNested(string key)
+		public Eu4Data OneNested(string key)
 		{
 			var text = One(key);
-			return new Eu4FileData(text.Substring(1, text.Length - 2));
+			return Eu4DataConvert.Deserialize(text.Substring(1, text.Length - 2));
 		}
 
-		public IEnumerable<Eu4FileData> ManyNested(string key)
+		public IEnumerable<Eu4Data> ManyNested(string key)
 		{
 			var texts = Many(key);
-			return texts.Select(text => new Eu4FileData(text.Substring(1, text.Length - 1)));
+			return texts.Select(text => Eu4DataConvert.Deserialize(text.Substring(1, text.Length - 1)));
 		}
 
 		public void Set(string key, string value)

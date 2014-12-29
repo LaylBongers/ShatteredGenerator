@@ -5,9 +5,9 @@ namespace ShatteredGenerator
 {
 	internal sealed class Eu4Country
 	{
-		private readonly Eu4FileData _data;
+		private readonly Eu4Data _data;
 
-		public Eu4Country(Eu4FileData data)
+		public Eu4Country(Eu4Data data)
 		{
 			_data = data;
 		}

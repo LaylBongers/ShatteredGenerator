@@ -78,7 +78,7 @@ namespace ShatteredGenerator
 				.GetDirectories("common")[0]
 				.GetDirectories("country_tags")[0]
 				.GetFiles("00_countries.txt")[0];
-			var countryTags = new Eu4FileData(File.ReadAllText(inputCountryTagFile.FullName));
+			var countryTags = Eu4DataConvert.Deserialize(File.ReadAllText(inputCountryTagFile.FullName));
 
 			// ==================================================
 			Console.WriteLine("\n------ Processing Data ------");
@@ -94,9 +94,9 @@ namespace ShatteredGenerator
 			Console.WriteLine("Generating new countries...");
 
 			//var random = new Random();
-		        Eu4ColorHandler colorHandler = new Eu4ColorHandler();
-		        //Must call this!
-		        colorHandler.LoadColors();
+		    Eu4ColorHandler colorHandler = new Eu4ColorHandler();
+		    //Must call this!
+		    colorHandler.LoadColors();
 		        
 			var outputCountryFiles = new List<KeyValuePair<string, Eu4Country>>();
 			var outputCountryHistoryFiles = new List<KeyValuePair<string, Eu4Country>>();
@@ -288,12 +288,12 @@ namespace ShatteredGenerator
 		}
 
 		private static IEnumerable<KeyValuePair<string, TOut>> LoadEu4Data<TOut>(DirectoryInfo inputDirectory,
-			Func<Eu4FileData, TOut> converter)
+			Func<Eu4Data, TOut> converter)
 		{
 			var provinces = inputDirectory.GetFiles()
 				.Select(f => new KeyValuePair<string, TOut>(
 					f.Name,
-					converter(new Eu4FileData(File.ReadAllText(f.FullName, _encoding)))));
+					converter(Eu4DataConvert.Deserialize(File.ReadAllText(f.FullName, _encoding)))));
 
 			return provinces;
 		}
