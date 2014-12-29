@@ -7,9 +7,9 @@ namespace ShatteredGenerator
 		public Eu4DataGrammar()
 		{
 			// Generic terminals
-			// Anything but ' ', =, \n, \r and \t
-			var word = new RegexBasedTerminal("Word", "[^ =\n\r\t]+");
-			var wordLiteral = TerminalFactory.CreateCSharpString("WorldLiteral");
+			// Anything but ' ', =, ", \n, \r and \t
+			Word = new RegexBasedTerminal("Word", "[^ =\"\n\r\t]+");
+			Literal = TerminalFactory.CreateCSharpString("Literal");
 
 			// Complex non-terminals
 			Expression = new NonTerminal("Expression");
@@ -19,8 +19,8 @@ namespace ShatteredGenerator
 
 			Expression.Rule = KeyValue | Value;
 			Expressions.Rule = MakeStarRule(Expressions, Expression);
-			KeyValue.Rule = word + ToTerm("=") + Value;
-			Value.Rule = word | wordLiteral;
+			KeyValue.Rule = Word + ToTerm("=") + Value;
+			Value.Rule = Literal | Word;
 
 			// Set the non-terminal that represents the full file
 			Root = Expressions;
@@ -32,5 +32,8 @@ namespace ShatteredGenerator
 		public NonTerminal Expressions { get; set; }
 		public NonTerminal KeyValue { get; set; }
 		public NonTerminal Value { get; set; }
+
+		public Terminal Word { get; set; }
+		public Terminal Literal { get; set; }
 	}
 }

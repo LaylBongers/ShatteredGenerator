@@ -75,7 +75,15 @@ namespace ShatteredGenerator
 		private static string ParseValue(ParseTreeNode node)
 		{
 			Debug.Assert(node.Term == Grammar.Value);
-			return node.ChildNodes.First().Token.ValueString;
+
+			var actual = node.ChildNodes.First();
+			if (actual.Term == Grammar.Word || actual.Term == Grammar.Literal)
+			{
+				// Trimming quotes is not needed
+				return actual.Token.ValueString;
+			}
+
+			throw new NotSupportedException("Unsupported value type.");
 		}
 
 		private static string CreateTreeString(ParseTreeNode node, int level = 0)
