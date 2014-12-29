@@ -16,12 +16,12 @@ namespace ShatteredGenerator
 			get { return _data.One("culture"); }
 			set { _data.Set("culture", value); }
 		}
-		
+
 		public string Religion
-	        {
-	            get { return _data.One("religion"); }
-	            set { _data.Set("religion", value); }
-	        }
+		{
+			get { return _data.One("religion"); }
+			set { _data.Set("religion", value); }
+		}
 
 		public string Owner
 		{
@@ -51,13 +51,13 @@ namespace ShatteredGenerator
 		{
 			_data.Add("add_core", countryTag);
 		}
-		
+
 		/// <summary>
-	        /// If the entries references the hre status, it will set it to no
-	        /// </summary>
-	        public void RemoveBadHREStatus()
-	        {
-	            _data.Set("hre", "no");
-	        }
+		///     If the entries references the hre status, it will set it to no
+		/// </summary>
+		public void RemoveBadHreStatus()
+		{
+			_data.Set("hre", "no");
+		}
 	}
 }

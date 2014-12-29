@@ -193,40 +193,19 @@ namespace ShatteredGenerator.Tests
 		}
 
 		[Fact]
-		public void Deserialize_NestedObjectOpeningBracketWithWeirdThings_SerializesIntact()
-		{
-			// Arrange
-			const string nestedString = "{\n\tbluh\n\ttest blah\n\tbleh\n}";
-			const string text = "blah = " + nestedString;
-
-			// Act
-			var data = Eu4DataConvert.Deserialize(text);
-
-			// Assert
-			Assert.Equal(1, data.Count);
-			var nested = data.One("blah");
-			Assert.Equal(nestedString, nested);
-
-			// Also it might have "s, that's a no-no here
-			var literal = data.Serialize();
-			Assert.False(literal.Contains('"'), "Literal contains \"s, they're not expected here.");
-		}
-
-
-		[Fact]
 		public void Deserialize_NestedObjectInLiteralComment_SerializesWithoutRemovingComment()
 		{
 			// Arrange
-			const string nestedString = "{test=\"I am test #whatever\"}";
-			const string text = "blah = " + nestedString;
+			const string nestedString = "I am test #whatever";
+			const string text = "blah = {test=\"" + nestedString + "\"}";
 
 			// Act
 			var data = Eu4DataConvert.Deserialize(text);
 
 			// Assert
 			Assert.Equal(1, data.Count);
-			var nested = data.One("blah");
-			Assert.Equal(nestedString, nested);
+			var nested = data.OneNested("blah");
+			Assert.Equal(nestedString, nested.One("test"));
 		}
 
 		[Fact]
@@ -267,29 +246,12 @@ namespace ShatteredGenerator.Tests
 
 			// Act
 			data.Set("blah", "this is\na test");
-			var result = Eu4DataConvert.Deserialize(data.Serialize());
+			var serialized = data.Serialize();
 
 			// Assert
+			var result = Eu4DataConvert.Deserialize(serialized);
 			Assert.Equal(1, result.Count);
 			Assert.Equal("this is\na test", result.One("blah"));
-		}
-
-		[Fact]
-		public void Serialize_Nested_SerializesIntact()
-		{
-			// Arrange
-			var data = new Eu4Data();
-			const string text = "{I am\n one \t wacky crazy\rnested thing is\na test}";
-
-			// Act
-			data.Set("blah", text);
-			var result = data.Serialize();
-
-			// Assert
-			Assert.Contains(text, result);
-			var serializedResult = Eu4DataConvert.Deserialize(result);
-			Assert.Equal(1, serializedResult.Count);
-			Assert.Equal(text, serializedResult.One("blah"));
 		}
 	}
 }

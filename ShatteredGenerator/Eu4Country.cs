@@ -27,13 +27,13 @@ namespace ShatteredGenerator
 		//Added this and Religion so we can modify them to match the province they own
 	        public string Culture
 	        {
-	            get { return _data.One("culture"); }
+				get { return _data.One("culture"); }
 	            set { _data.Set("culture", value); }
 	        }
 	
 	        public string Religion
 	        {
-	            get { return _data.One("religion"); }
+				get { return _data.One("religion"); }
 	            set { _data.Set("religion", value); }
 	        }
 

@@ -54,6 +54,7 @@
     <Compile Include="Eu4Data.cs" />
     <Compile Include="Eu4Country.cs" />
     <Compile Include="Eu4CountryHistory.cs" />
+    <Compile Include="Eu4DataEntry.cs" />
     <Compile Include="Eu4DataGrammar.cs" />
     <Compile Include="Eu4DataConvert.cs" />
     <Compile Include="Eu4Province.cs" />

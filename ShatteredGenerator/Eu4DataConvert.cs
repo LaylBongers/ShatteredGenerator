@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Linq.Expressions;
 using Irony.Parsing;
 
 namespace ShatteredGenerator
@@ -44,14 +43,14 @@ namespace ShatteredGenerator
 
 			foreach (var expression in expressions)
 			{
-				var keyValue = ParseExpression(expression);
-				data.Add(keyValue.Key, keyValue.Value);
+				var entry = ParseExpression(expression);
+				data.Add(entry.Key, entry.Value);
 			}
 
 			return data;
 		}
 
-		private static KeyValuePair<string, string> ParseExpression(ParseTreeNode node)
+		private static KeyValuePair<string, Eu4DataEntry> ParseExpression(ParseTreeNode node)
 		{
 			Debug.Assert(node.Term == Grammar.Expression);
 			var actualExpression = node.ChildNodes.First();
@@ -59,20 +58,20 @@ namespace ShatteredGenerator
 			if (actualExpression.Term == Grammar.KeyValue)
 				return ParseKeyValue(actualExpression);
 			if (actualExpression.Term == Grammar.Value)
-				return new KeyValuePair<string, string>("", ParseValue(actualExpression));
-			
+				return new KeyValuePair<string, Eu4DataEntry>("", ParseValue(actualExpression));
+
 			throw new NotSupportedException("Unsupported node in expression.");
 		}
 
-		private static KeyValuePair<string, string> ParseKeyValue(ParseTreeNode node)
+		private static KeyValuePair<string, Eu4DataEntry> ParseKeyValue(ParseTreeNode node)
 		{
 			Debug.Assert(node.Term == Grammar.KeyValue);
 
 			var nodes = node.ChildNodes.ToArray();
-			return new KeyValuePair<string, string>(nodes[0].Token.ValueString, ParseValue(nodes[2]));
+			return new KeyValuePair<string, Eu4DataEntry>(nodes[0].Token.ValueString, ParseValue(nodes[2]));
 		}
 
-		private static string ParseValue(ParseTreeNode node)
+		private static Eu4DataEntry ParseValue(ParseTreeNode node)
 		{
 			Debug.Assert(node.Term == Grammar.Value);
 
@@ -80,7 +79,12 @@ namespace ShatteredGenerator
 			if (actual.Term == Grammar.Word || actual.Term == Grammar.Literal)
 			{
 				// Trimming quotes is not needed
-				return actual.Token.ValueString;
+				return new Eu4DataEntry {String = actual.Token.ValueString};
+			}
+			if (actual.Term == Grammar.NestedObject)
+			{
+				// We basically start from the start within this
+				return new Eu4DataEntry {Data = ParseExpressions(actual.ChildNodes.First())};
 			}
 
 			throw new NotSupportedException("Unsupported value type.");

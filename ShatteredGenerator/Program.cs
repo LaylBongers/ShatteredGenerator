@@ -120,7 +120,7 @@ namespace ShatteredGenerator
 				var provinceName = provinceFileNameLocal.Substring(0, provinceFileNameLocal.Length - ".txt".Length);
 
 				//Fix bad HRE status
-                		provinceFile.Value.RemoveBadHREStatus();
+                		provinceFile.Value.RemoveBadHreStatus();
 
 				// Clone the country and its history
 				var newCountry = oldCountry.Clone();
