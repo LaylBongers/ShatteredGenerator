@@ -51,5 +51,13 @@ namespace ShatteredGenerator
 		{
 			_data.Add("add_core", countryTag);
 		}
+		
+		/// <summary>
+	        /// If the entries references the hre status, it will set it to no
+	        /// </summary>
+	        public void RemoveBadHREStatus()
+	        {
+	            _data.Set("hre", "no");
+	        }
 	}
 }
